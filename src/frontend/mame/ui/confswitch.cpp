@@ -11,6 +11,7 @@
 #include "emu.h"
 #include "ui/confswitch.h"
 
+#include "emuopts.h"
 #include "uiinput.h"
 
 #include <algorithm>
@@ -178,6 +179,11 @@ void menu_confswitch::populate()
 		item_append(_("[currently n/a]"), FLAG_DISABLE, nullptr);
 
 	item_append(menu_item_type::SEPARATOR);
+
+	if (machine().options().headless()) {
+		return;
+	}
+
 	item_append(_("Reset System"), 0, (void *)1);
 }
 

@@ -998,9 +998,11 @@ else
 GCC_VERSION      := $(shell $(TOOLCHAIN)$(subst @,,$(CC)) -dumpfullversion 2> /dev/null)
 endif
 ifeq ($(findstring emcc,$(CC)),emcc)
-CLANG_VERSION    := $(shell $(TOOLCHAIN)$(subst @,,$(CC))  -v  2>&1 >/dev/null | grep 'clang version' | head -n 1 | grep -e 'version [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | grep -e '[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | tail -n 1)
+CLANG_VERSION    := $(shell $(TOOLCHAIN)$(subst @,,$(CC))    -v  2>&1 >/dev/null | grep 'clang version' | head -n 1 | grep -e 'version [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | grep -e '[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | tail -n 1)
+else ifeq ($(findstring distcc,$(CC)),distcc)
+CLANG_VERSION    := $(shell $(TOOLCHAIN)$(subst @,,$(CC)) cc --version  2> /dev/null | head -n 1 | grep -e 'version [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | grep -e '[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | tail -n 1)
 else
-CLANG_VERSION    := $(shell $(TOOLCHAIN)$(subst @,,$(CC))  --version  2> /dev/null | head -n 1 | grep -e 'version [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | grep -e '[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | tail -n 1)
+CLANG_VERSION    := $(shell $(TOOLCHAIN)$(subst @,,$(CC))    --version  2> /dev/null | head -n 1 | grep -e 'version [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | grep -e '[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?' -o | tail -n 1)
 endif
 PYTHON_AVAILABLE := $(shell $(PYTHON) --version > /dev/null 2>&1 && echo python)
 GIT_AVAILABLE := $(shell git --version > /dev/null 2>&1 && echo git)
@@ -1452,6 +1454,27 @@ openbsd_arm64_clang: generate $(PROJECTDIR)/$(MAKETYPE)-openbsd-clang/Makefile
 openbsd_x86_clang: generate $(PROJECTDIR)/$(MAKETYPE)-openbsd-clang/Makefile
 	$(SILENT) $(MAKE) -C $(PROJECTDIR)/$(MAKETYPE)-openbsd-clang config=$(CONFIG)32 precompile
 	$(SILENT) $(MAKE) -C $(PROJECTDIR)/$(MAKETYPE)-openbsd-clang config=$(CONFIG)32
+
+#-------------------------------------------------
+# cmake
+#-------------------------------------------------
+
+.PHONY: cmake
+cmake: generate
+	$(SILENT) $(GENIE) $(PARAMS) $(TARGET_PARAMS) --gcc=osx-clang --gcc_version=$(CLANG_VERSION) cmake
+ifneq (posix,$(SHELLTYPE))
+	$(SILENT)echo cmake_minimum_required(VERSION 2.8.4) > CMakeLists.txt
+	$(SILENT)echo add_subdirectory($(PROJECTDIR)/cmake) >> CMakeLists.txt
+else
+	$(SILENT)echo "cmake_minimum_required(VERSION 3.22.3)" > CMakeLists.txt
+	$(SILENT)echo "project($(TARGET)$(SUBTARGET)_$(OSD))" >> CMakeLists.txt
+	$(SILENT)echo "set(CMAKE_CXX_STANDARD 17)" >> CMakeLists.txt
+	$(SILENT)echo "set(CMAKE_CXX_STANDARD_REQUIRED ON)" >> CMakeLists.txt
+	$(SILENT)echo "set(CMAKE_CXX_EXTENSIONS OFF)" >> CMakeLists.txt
+	$(SILENT)echo "" >> CMakeLists.txt
+	$(SILENT)echo "add_subdirectory(src)" >> CMakeLists.txt
+	$(SILENT)echo "add_subdirectory($(PROJECTDIR)/cmake)" >> CMakeLists.txt
+endif
 
 #-------------------------------------------------
 # Clean/bootstrap
