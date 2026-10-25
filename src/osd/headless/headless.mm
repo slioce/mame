@@ -256,6 +256,7 @@ static_assert(InputItemID::InputItemID_ABSOLUTE_MAXIMUM == input_item_id::ITEM_I
 
 	InputClass *_joystick;
 	InputClass *_mouse;
+	InputClass *_lightgun;
 	InputClass *_keyboard;
 
 	bool _isEmpty;
@@ -313,6 +314,15 @@ static_assert(InputItemID::InputItemID_ABSOLUTE_MAXIMUM == input_item_id::ITEM_I
 		_mouse = [[InputClass alloc] initWithClass:&_machine->input().device_class(DEVICE_CLASS_MOUSE)];
 	}
 	return _mouse;
+}
+
+- (InputClass *)lightgun
+{
+	if (_lightgun == nil)
+	{
+		_lightgun = [[InputClass alloc] initWithClass:&_machine->input().device_class(DEVICE_CLASS_LIGHTGUN)];
+	}
+	return _lightgun;
 }
 
 - (InputClass *)keyboard
@@ -466,6 +476,7 @@ static_assert(InputItemID::InputItemID_ABSOLUTE_MAXIMUM == input_item_id::ITEM_I
 	_gameDriver = nil;
 	_joystick = nil;
 	_mouse = nil;
+	_lightgun = nil;
 	_keyboard = nil;
 	_supportsSave = NO;
 
@@ -530,6 +541,22 @@ static_assert(InputItemID::InputItemID_ABSOLUTE_MAXIMUM == input_item_id::ITEM_I
 	}
 
 	_supportsSave = static_cast<BOOL>((_machine->system().flags & MACHINE_SUPPORTS_SAVE) != 0);
+
+	// MAME marks aimed controls (lightguns, and mounted guns emulated as analog sticks) with a
+	// crosshair; only enable lightguns for those games, so pointer clicks don't press buttons elsewhere
+	bool hasCrosshair = false;
+	for (auto &port : _machine->ioport().ports())
+	{
+		for (ioport_field const &field : port.second->fields())
+		{
+			hasCrosshair = hasCrosshair || field.crosshair_axis() != CROSSHAIR_AXIS_NONE;
+		}
+	}
+	if (hasCrosshair)
+	{
+		_machine->input().device_class(DEVICE_CLASS_LIGHTGUN).enable(true);
+		os_log_debug(OE_LOG, "lightgun enabled: crosshair inputs present");
+	}
 
 	return static_cast<BOOL>(_machine->phase() == machine_phase::RUNNING);
 }
@@ -604,6 +631,20 @@ public:
 		add_button_assignment(assignments, ioport_type(IPT_START), { ITEM_ID_START });
 		add_button_assignment(assignments, ioport_type(IPT_SELECT), { ITEM_ID_SELECT });
 		
+		device->set_default_assignments(std::move(assignments));
+	}
+
+	static void update_lightgun_assignments(input_device *device)
+	{
+		// lightgun X/Y and buttons 1/2 already default to the lightgun; mounted guns
+		// such as Terminator 2 are emulated as analog sticks, so add the lightgun there too
+		input_device::assignment_vector assignments;
+
+		assignments.emplace_back(ioport_type(IPT_AD_STICK_X), SEQ_TYPE_STANDARD,
+		                         input_seq(input_code(DEVICE_CLASS_LIGHTGUN, 0, ITEM_CLASS_ABSOLUTE, ITEM_MODIFIER_NONE, ITEM_ID_XAXIS)));
+		assignments.emplace_back(ioport_type(IPT_AD_STICK_Y), SEQ_TYPE_STANDARD,
+		                         input_seq(input_code(DEVICE_CLASS_LIGHTGUN, 0, ITEM_CLASS_ABSOLUTE, ITEM_MODIFIER_NONE, ITEM_ID_YAXIS)));
+
 		device->set_default_assignments(std::move(assignments));
 	}
 };
@@ -702,6 +743,10 @@ static int32_t block_getter(void *device_internal, void *item_internal)
 	if (_class->device_class() == DEVICE_CLASS_JOYSTICK)
 	{
 		helper::update_assignments(device);
+	}
+	else if (_class->device_class() == DEVICE_CLASS_LIGHTGUN)
+	{
+		helper::update_lightgun_assignments(device);
 	}
 	
 	auto dev = [[InputDevice alloc] initWithDevice:device];

@@ -76,6 +76,7 @@ OE_EXPORTED_CLASS
 
 @property (nonatomic, readonly) InputClass *joystick;
 @property (nonatomic, readonly) InputClass *mouse;
+@property (nonatomic, readonly) InputClass *lightgun;
 @property (nonatomic, readonly) InputClass *keyboard;
 @property (nonatomic, readonly) BOOL supportsSave;
 
