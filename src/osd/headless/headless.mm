@@ -992,14 +992,16 @@ bool headless_osd_interface::get_font_families(std::string const &font_path,
 void headless_osd_interface::output_callback(osd_output_channel channel,
 											 util::format_argument_pack<char> const &args)
 {
-	static OSDLogLevel levels[OSD_OUTPUT_CHANNEL_COUNT] = {
-			[OSD_OUTPUT_CHANNEL_ERROR] = OSDLogLevelError,
-			[OSD_OUTPUT_CHANNEL_WARNING] = OSDLogLevelWarning,
-			[OSD_OUTPUT_CHANNEL_INFO] = OSDLogLevelInfo,
-			[OSD_OUTPUT_CHANNEL_DEBUG] = OSDLogLevelDebug,
-			[OSD_OUTPUT_CHANNEL_VERBOSE] = OSDLogLevelVerbose,
-			[OSD_OUTPUT_CHANNEL_LOG] = OSDLogLevelLog,
+	// indexed by osd_output_channel; order must match the enum
+	static const OSDLogLevel levels[] = {
+			OSDLogLevelError,   // OSD_OUTPUT_CHANNEL_ERROR
+			OSDLogLevelWarning, // OSD_OUTPUT_CHANNEL_WARNING
+			OSDLogLevelInfo,    // OSD_OUTPUT_CHANNEL_INFO
+			OSDLogLevelDebug,   // OSD_OUTPUT_CHANNEL_DEBUG
+			OSDLogLevelVerbose, // OSD_OUTPUT_CHANNEL_VERBOSE
+			OSDLogLevelLog,     // OSD_OUTPUT_CHANNEL_LOG
 	};
+	static_assert(std::size(levels) == OSD_OUTPUT_CHANNEL_COUNT, "levels must cover every osd_output_channel");
 
 	if (channel == OSD_OUTPUT_CHANNEL_VERBOSE && !m_print_verbose)
 	{

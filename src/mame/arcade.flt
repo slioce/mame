@@ -689,6 +689,15 @@ misc/crystal.cpp
 misc/cubeqst.cpp
 //misc/cupidon.cpp          // black screen
 cave/cv1k.cpp
+cave/cv1k_v_blit0.cpp          // cv1k blitters, not found by makedep
+cave/cv1k_v_blit1.cpp          // cv1k blitters, not found by makedep
+cave/cv1k_v_blit2.cpp          // cv1k blitters, not found by makedep
+cave/cv1k_v_blit3.cpp          // cv1k blitters, not found by makedep
+cave/cv1k_v_blit4.cpp          // cv1k blitters, not found by makedep
+cave/cv1k_v_blit5.cpp          // cv1k blitters, not found by makedep
+cave/cv1k_v_blit6.cpp          // cv1k blitters, not found by makedep
+cave/cv1k_v_blit7.cpp          // cv1k blitters, not found by makedep
+cave/cv1k_v_blit8.cpp          // cv1k blitters, not found by makedep
 //misc/cwheel.cpp          // no screen
 misc/cybertnk.cpp
 //misc/daryde.cpp          // no screen
