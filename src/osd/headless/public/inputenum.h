@@ -1,3 +1,5 @@
+// license:GPL-2.0+
+// copyright-holders:Stuart Carnie, Alessandro Lioce
 #pragma once
 
 // absolute devices return values between -65536 and +65536

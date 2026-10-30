@@ -1,3 +1,5 @@
+// license:GPL-2.0+
+// copyright-holders:Stuart Carnie, Alessandro Lioce
 #import <Foundation/Foundation.h>
 #import "oecommon.h"
 

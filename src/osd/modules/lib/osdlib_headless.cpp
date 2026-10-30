@@ -1,3 +1,5 @@
+// license:GPL-2.0+
+// copyright-holders:Stuart Carnie, Alessandro Lioce
 
 #include <stdlib.h>
 #ifdef __GNUC__
